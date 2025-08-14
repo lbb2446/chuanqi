@@ -1,0 +1,106 @@
+/* 布局管理CSS */
+
+/* 移动端布局 (375×667) */
+.layout-mobile {
+  --layout-width: 375px;
+  --layout-height: 667px;
+  --grid-cols: 1;
+  --spacing: 1rem;
+  --padding: 1rem;
+  --text-h1: 1.5rem;
+  --text-h2: 1.25rem;
+  --text-h3: 1.125rem;
+  --text-body: 0.875rem;
+  --text-small: 0.75rem;
+  --button-large: 1.5rem 0.75rem;
+  --button-medium: 1rem 0.5rem;
+  --button-small: 0.75rem 0.25rem;
+}
+
+/* 桌面端布局 (1920×1080) */
+.layout-desktop {
+  --layout-width: 1920px;
+  --layout-height: 1080px;
+  --grid-cols: 2;
+  --spacing: 1.5rem;
+  --padding: 1.5rem;
+  --text-h1: 1.875rem;
+  --text-h2: 1.5rem;
+  --text-h3: 1.25rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --button-large: 2rem 1rem;
+  --button-medium: 1.5rem 0.75rem;
+  --button-small: 1rem 0.5rem;
+}
+
+/* 应用布局样式 */
+.layout-mobile .responsive-grid {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.layout-desktop .responsive-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.layout-mobile .responsive-text-h1 { font-size: var(--text-h1); }
+.layout-mobile .responsive-text-h2 { font-size: var(--text-h2); }
+.layout-mobile .responsive-text-h3 { font-size: var(--text-h3); }
+.layout-mobile .responsive-text-body { font-size: var(--text-body); }
+.layout-mobile .responsive-text-small { font-size: var(--text-small); }
+
+.layout-desktop .responsive-text-h1 { font-size: var(--text-h1); }
+.layout-desktop .responsive-text-h2 { font-size: var(--text-h2); }
+.layout-desktop .responsive-text-h3 { font-size: var(--text-h3); }
+.layout-desktop .responsive-text-body { font-size: var(--text-body); }
+.layout-desktop .responsive-text-small { font-size: var(--text-small); }
+
+.layout-mobile .responsive-padding { padding: var(--padding); }
+.layout-desktop .responsive-padding { padding: var(--padding); }
+
+.layout-mobile .responsive-spacing { gap: var(--spacing); }
+.layout-desktop .responsive-spacing { gap: var(--spacing); }
+
+/* 响应式容器 */
+.layout-mobile .responsive-container {
+  max-width: var(--layout-width);
+  margin: 0 auto;
+}
+
+.layout-desktop .responsive-container {
+  max-width: var(--layout-width);
+  margin: 0 auto;
+}
+
+/* 响应式按钮 */
+.layout-mobile .responsive-button-large {
+  padding: var(--button-large);
+  font-size: 1.125rem;
+}
+
+.layout-desktop .responsive-button-large {
+  padding: var(--button-medium);
+  font-size: 1.25rem;
+}
+
+/* 无过渡动画 */
+.layout-mobile *,
+.layout-desktop * {
+  transition: none !important;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .layout-mobile .responsive-container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+}
+
+/* 桌面端优化 */
+@media (min-width: 769px) {
+  .layout-desktop .responsive-container {
+    max-width: 100%;
+    padding: 0 2rem;
+  }
+} 

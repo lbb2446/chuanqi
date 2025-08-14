@@ -17,7 +17,12 @@ export const useIdleStore = defineStore('idle', () => {
       
       // 每5秒进行一次战斗
       if (gameStore.idleTime % 5 === 0) {
-        gameStore.battle()
+        // 检查是否有怪物可以战斗
+        if (gameStore.currentBattleMonsters.length > 0) {
+          gameStore.battle()
+        } else {
+          console.log('没有怪物可以战斗，跳过本次战斗')
+        }
       }
     }, 1000)
   }
