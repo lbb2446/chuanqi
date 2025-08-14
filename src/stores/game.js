@@ -224,14 +224,17 @@ export const useGameStore = defineStore('game', () => {
 
     // 执行技能
     const damage = calculateSkillDamage(totalStats.value, skill, skillLevel)
+    const monsterHpBefore = currentMonster.hp
     currentMonster.hp -= damage
     character.value.mp -= mpCost
     
     // 详细的技能使用日志
     addBattleLog(`🎯 施放技能【${skill.MagName}】Lv${skillLevel}`, 'skill')
-    addBattleLog(`   → 对 ${currentMonster.name} 造成 ${damage} 点伤害`, 'damage')
-    addBattleLog(`   → 消耗魔法值 ${mpCost}，剩余MP: ${character.value.mp}/${character.value.maxMp}`, 'info')
-    addBattleLog(`   → 技能冷却: ${parseInt(skill.Delay || '0') * 10}ms`, 'info')
+    addBattleLog(`   → 目标: ${currentMonster.name} (Lv${currentMonster.level})`, 'info')
+    addBattleLog(`   → 伤害: ${damage} 点 (${monsterHpBefore} → ${currentMonster.hp})`, 'damage')
+    addBattleLog(`   → MP消耗: ${mpCost} (剩余: ${character.value.mp}/${character.value.maxMp})`, 'info')
+    addBattleLog(`   → 冷却时间: ${parseInt(skill.Delay || '0') * 10}ms`, 'info')
+    addBattleLog(`   → 熟练度: +1 (当前: ${(skillProficiency.value[skillId] || 0) + 1})`, 'exp')
     
     addSkillProficiency(skillId, 1)
     const delayMs = (parseInt(skill.Delay || '0') || 0) * 10 // 源表 Delay 单位不明确，按描述毫秒，这里保守乘10防过快
@@ -271,12 +274,6 @@ export const useGameStore = defineStore('game', () => {
       canRecover.value = false // 开始战斗后无法恢复
       startBattleSequence()
       
-      // 确保战斗状态正确
-      if (currentBattleMonsters.value.length === 0) {
-        addBattleLog('警告：战斗开始但怪物群为空，重新生成怪物', 'warning')
-        generateMonsterGroup()
-      }
-      
       // 启动挂机定时器
       startIdleTimer()
     } else {
@@ -302,13 +299,9 @@ export const useGameStore = defineStore('game', () => {
       if (idleTime.value % 5 === 0) {
         addBattleLog(`挂机时间：${idleTime.value}秒，准备战斗`, 'info')
         
-        // 检查是否有怪物可以战斗
-        if (currentBattleMonsters.value.length > 0) {
-          addBattleLog(`开始第${Math.floor(idleTime.value / 5)}场战斗`, 'info')
-          battle()
-        } else {
-          addBattleLog('没有怪物可以战斗，跳过本次战斗', 'warning')
-        }
+        // 每次战斗都必定有怪物，直接进行战斗
+        addBattleLog(`开始第${Math.floor(idleTime.value / 5)}场战斗`, 'info')
+        battle()
       }
     }, 1000)
     
@@ -384,16 +377,29 @@ export const useGameStore = defineStore('game', () => {
         currentBattleMonsters.value.push(monster)
         addBattleLog(`成功生成怪物：${monster.name}，HP: ${monster.hp}`, 'info')
       } else {
-        addBattleLog(`警告：无法生成怪物 ${monsterName}`, 'warning')
+        addBattleLog(`警告：无法生成怪物 ${monsterName}，使用默认怪物`, 'warning')
+        // 如果无法生成指定怪物，使用默认怪物
+        const defaultMonster = {
+          name: monsterName,
+          level: 1,
+          hp: 50,
+          maxHp: 50,
+          mp: 0,
+          attack: 5,
+          magicAttack: 0,
+          defense: 2,
+          maxDefense: 5,
+          magicDefense: 0,
+          dodge: 0,
+          attackSpeed: 2000,
+          exp: 10
+        }
+        currentBattleMonsters.value.push(defaultMonster)
+        addBattleLog(`使用默认怪物：${defaultMonster.name}，HP: ${defaultMonster.hp}`, 'info')
       }
     }
 
     addBattleLog(`遭遇了${currentBattleMonsters.value.length}只怪物！`, 'info')
-    
-    // 如果没有成功生成怪物，记录错误
-    if (currentBattleMonsters.value.length === 0) {
-      addBattleLog('错误：未能生成任何怪物！', 'error')
-    }
   }
 
   // 开始Boss战
@@ -407,7 +413,7 @@ export const useGameStore = defineStore('game', () => {
 
   function battle() {
     // 添加调试日志
-    addBattleLog(`战斗状态: 步数${battleStep.value}/${totalBattleSteps.value}, 怪物数量${currentBattleMonsters.value.length}, Boss战${isBossBattle.value}`, 'info')
+    addBattleLog(`战斗状态: 步数${battleStep.value}/${totalBattleSteps.value}, 当前怪物${currentBattleMonsters.value.length}只, Boss战${isBossBattle.value}`, 'info')
     
     // 如果没有怪物，需要生成新的怪物群
     if (currentBattleMonsters.value.length === 0) {
@@ -455,8 +461,13 @@ export const useGameStore = defineStore('game', () => {
       const playerMagicDamage = Math.max(1, totalStats.value.magicAttack - currentMonster.magicDefense + Math.floor(Math.random() * 10))
       const totalPlayerDamage = playerPhysicalDamage + playerMagicDamage
       
+      const monsterHpBefore = currentMonster.hp
       currentMonster.hp -= Math.floor(totalPlayerDamage)
-      addBattleLog(`对 ${currentMonster.name} 造成了 ${Math.floor(totalPlayerDamage)} 点伤害 (物理:${Math.floor(playerPhysicalDamage)}, 魔法:${Math.floor(playerMagicDamage)})`, 'damage')
+      
+      addBattleLog(`⚔️ 普通攻击 ${currentMonster.name}`, 'info')
+      addBattleLog(`   → 物理伤害: ${Math.floor(playerPhysicalDamage)} 点`, 'damage')
+      addBattleLog(`   → 魔法伤害: ${Math.floor(playerMagicDamage)} 点`, 'damage')
+      addBattleLog(`   → 总伤害: ${Math.floor(totalPlayerDamage)} 点 (${monsterHpBefore} → ${currentMonster.hp})`, 'damage')
     }
 
     if (currentMonster.hp <= 0) {
@@ -467,9 +478,9 @@ export const useGameStore = defineStore('game', () => {
       character.value.exp += expGain
       character.value.gold += goldGain
       
-      addBattleLog(`击败了 ${currentMonster.name}！`, 'info')
-      addBattleLog(`获得 ${expGain} 经验值`, 'exp')
-      addBattleLog(`获得 ${goldGain} 金币`, 'gold')
+      addBattleLog(`💀 击败了 ${currentMonster.name}！`, 'success')
+      addBattleLog(`   → 获得 ${expGain} 经验值`, 'exp')
+      addBattleLog(`   → 获得 ${goldGain} 金币`, 'gold')
       
       // 检查升级
       checkLevelUp()
@@ -484,14 +495,18 @@ export const useGameStore = defineStore('game', () => {
       // 怪物反击 - 考虑闪避
       const dodgeChance = totalStats.value.dodge / 1000 // 闪避概率
       if (Math.random() < dodgeChance) {
-        addBattleLog(`闪避了 ${currentMonster.name} 的攻击！`, 'info')
+        addBattleLog(`✨ 闪避了 ${currentMonster.name} 的攻击！`, 'success')
       } else {
         const enemyPhysicalDamage = Math.max(1, currentMonster.attack - totalStats.value.defense + Math.floor(Math.random() * 5))
         const enemyMagicDamage = Math.max(1, currentMonster.magicAttack - totalStats.value.magicDefense + Math.floor(Math.random() * 5))
         const totalEnemyDamage = enemyPhysicalDamage + enemyMagicDamage
         
+        const playerHpBefore = character.value.hp
         character.value.hp -= Math.floor(totalEnemyDamage)
-        addBattleLog(`${currentMonster.name} 对你造成了 ${Math.floor(totalEnemyDamage)} 点伤害 (物理:${Math.floor(enemyPhysicalDamage)}, 魔法:${Math.floor(enemyMagicDamage)})`, 'damage')
+        addBattleLog(`🛡️ ${currentMonster.name} 反击`, 'warning')
+        addBattleLog(`   → 物理伤害: ${Math.floor(enemyPhysicalDamage)} 点`, 'damage')
+        addBattleLog(`   → 魔法伤害: ${Math.floor(enemyMagicDamage)} 点`, 'damage')
+        addBattleLog(`   → 总伤害: ${Math.floor(totalEnemyDamage)} 点 (${playerHpBefore} → ${character.value.hp})`, 'damage')
         
         // 检查生命值是否过低，如果过低则战斗失败
         if (character.value.hp <= 0) {
@@ -649,7 +664,11 @@ export const useGameStore = defineStore('game', () => {
       character.value.baseAgility += 20
       character.value.baseLuck += 20
       
-      addBattleLog(`恭喜！升级到 ${character.value.level} 级！`, 'info')
+      addBattleLog(`🎉 恭喜！升级到 ${character.value.level} 级！`, 'success')
+      addBattleLog(`   → 生命值: ${character.value.maxHp} (+100)`, 'success')
+      addBattleLog(`   → 魔法值: ${character.value.maxMp} (+100)`, 'success')
+      addBattleLog(`   → 攻击力: ${character.value.baseAttack} (+50)`, 'success')
+      addBattleLog(`   → 防御力: ${character.value.baseDefense} (+30)`, 'success')
     }
   }
 
@@ -906,11 +925,11 @@ export const useGameStore = defineStore('game', () => {
     loadGame()
     
     // 页面刷新时确保战斗状态正确
-    if (isIdle.value && (!currentMap.value || currentBattleMonsters.value.length === 0)) {
-      // 如果状态异常，重置战斗状态
+    if (isIdle.value && !currentMap.value) {
+      // 如果没有地图，重置战斗状态
       isIdle.value = false
       resetBattleState()
-      addBattleLog('页面刷新，战斗状态已重置', 'info')
+      addBattleLog('页面刷新，没有选择地图，战斗状态已重置', 'info')
     }
     
     // 确保挂机定时器被清理
