@@ -10,6 +10,16 @@
         <div class="bg-gray-700 p-4 rounded">
           <div class="text-sm text-gray-400">经验值</div>
           <div class="text-xl font-bold text-blue-400">{{ character.exp }}/{{ character.maxExp }}</div>
+          <!-- 经验进度条 -->
+          <div class="w-full bg-gray-600 rounded-full h-2 mt-2">
+            <div
+              class="bg-blue-500 h-2 rounded-full transition-all"
+              :style="{ width: Math.min(100, (character.exp / character.maxExp) * 100) + '%' }"
+            ></div>
+          </div>
+          <div class="text-xs text-gray-400 mt-1">
+            进度: {{ Math.floor((character.exp / character.maxExp) * 100) }}%
+          </div>
         </div>
         <div class="bg-gray-700 p-4 rounded">
           <div class="text-sm text-gray-400">金币</div>
@@ -24,30 +34,94 @@
 
     <div class="bg-gray-800 rounded-lg p-6">
       <h3 class="text-xl font-bold mb-4 text-yellow-400">属性</h3>
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-gray-700 p-3 rounded">
           <div class="text-sm text-gray-400">生命值</div>
           <div class="text-lg font-bold text-red-400">{{ character.hp }}/{{ character.maxHp }}</div>
+          <div class="w-full bg-gray-600 rounded-full h-1.5 mt-1">
+            <div
+              class="bg-red-500 h-1.5 rounded-full transition-all"
+              :style="{ width: (character.hp / character.maxHp) * 100 + '%' }"
+            ></div>
+          </div>
         </div>
         <div class="bg-gray-700 p-3 rounded">
           <div class="text-sm text-gray-400">魔法值</div>
           <div class="text-lg font-bold text-blue-400">{{ character.mp }}/{{ character.maxMp }}</div>
+          <div class="w-full bg-gray-600 rounded-full h-1.5 mt-1">
+            <div
+              class="bg-blue-500 h-1.5 rounded-full transition-all"
+              :style="{ width: (character.mp / character.maxMp) * 100 + '%' }"
+            ></div>
+          </div>
         </div>
         <div class="bg-gray-700 p-3 rounded">
-          <div class="text-sm text-gray-400">攻击力</div>
+          <div class="text-sm text-gray-400">物理攻击</div>
           <div class="text-lg font-bold text-orange-400">{{ totalStats.attack }}</div>
         </div>
         <div class="bg-gray-700 p-3 rounded">
-          <div class="text-sm text-gray-400">防御力</div>
+          <div class="text-sm text-gray-400">魔法攻击</div>
+          <div class="text-lg font-bold text-purple-400">{{ totalStats.magicAttack }}</div>
+        </div>
+        <div class="bg-gray-700 p-3 rounded">
+          <div class="text-sm text-gray-400">物理防御</div>
           <div class="text-lg font-bold text-green-400">{{ totalStats.defense }}</div>
         </div>
         <div class="bg-gray-700 p-3 rounded">
-          <div class="text-sm text-gray-400">敏捷</div>
-          <div class="text-lg font-bold text-yellow-400">{{ totalStats.agility }}</div>
+          <div class="text-sm text-gray-400">魔法防御</div>
+          <div class="text-lg font-bold text-cyan-400">{{ totalStats.magicDefense }}</div>
         </div>
         <div class="bg-gray-700 p-3 rounded">
-          <div class="text-sm text-gray-400">幸运</div>
-          <div class="text-lg font-bold text-purple-400">{{ totalStats.luck }}</div>
+          <div class="text-sm text-gray-400">闪避能力</div>
+          <div class="text-lg font-bold text-yellow-400">{{ totalStats.dodge }}</div>
+        </div>
+        <div class="bg-gray-700 p-3 rounded">
+          <div class="text-sm text-gray-400">攻击速度</div>
+          <div class="text-lg font-bold text-indigo-400">{{ totalStats.attackSpeed }}ms</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 升级信息 -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h3 class="text-xl font-bold mb-4 text-green-400">升级信息</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gray-700 p-4 rounded">
+          <div class="text-sm text-gray-400 mb-2">当前等级</div>
+          <div class="text-2xl font-bold text-green-400 mb-2">{{ character.level }}</div>
+          <div class="text-xs text-gray-300">
+            升级后属性提升:
+          </div>
+          <div class="text-xs text-gray-300 mt-1">
+            • 生命值 +20
+          </div>
+          <div class="text-xs text-gray-300">
+            • 魔法值 +20
+          </div>
+          <div class="text-xs text-gray-300">
+            • 攻击力 +1
+          </div>
+          <div class="text-xs text-gray-300">
+            • 防御力 +1
+          </div>
+        </div>
+        <div class="bg-gray-700 p-4 rounded">
+          <div class="text-sm text-gray-400 mb-2">升级进度</div>
+          <div class="text-lg font-bold text-blue-400 mb-2">
+            {{ character.exp }}/{{ character.maxExp }}
+          </div>
+          <div class="w-full bg-gray-600 rounded-full h-3 mb-2">
+            <div
+              class="bg-blue-500 h-3 rounded-full transition-all"
+              :style="{ width: Math.min(100, (character.exp / character.maxExp) * 100) + '%' }"
+            ></div>
+          </div>
+          <div class="text-sm text-gray-300">
+            进度: {{ Math.floor((character.exp / character.maxExp) * 100) }}%
+          </div>
+          <div class="text-xs text-gray-400 mt-2">
+            还需要: {{ character.maxExp - character.exp }} 经验值
+          </div>
         </div>
       </div>
     </div>
@@ -184,12 +258,22 @@
 </template>
 
 <script setup>
-import { useGameStore } from '@/stores/game.js'
+import { useCharacterStore } from '@/stores/character.js'
+import { useEquipmentStore } from '@/stores/equipment.js'
+import { useSkillsStore } from '@/stores/skills.js'
+import { useMapsStore } from '@/stores/maps.js'
 import { storeToRefs } from 'pinia'
 
-const gameStore = useGameStore()
-const { character, idleTime, totalStats, allSkills, selectedActiveSkills, skillProficiency, skillCooldownUntil } = storeToRefs(gameStore)
-const { getSkillLevel, canSelectSkill, toggleSelectSkill, getSkillById, getSkillMpCost } = gameStore
+const characterStore = useCharacterStore()
+const equipmentStore = useEquipmentStore()
+const skillsStore = useSkillsStore()
+const mapsStore = useMapsStore()
+
+const { character, idleTime } = storeToRefs(characterStore)
+const { totalStats } = storeToRefs(equipmentStore)
+const { allSkills, selectedActiveSkills, skillProficiency, skillCooldownUntil } = storeToRefs(skillsStore)
+
+const { getSkillLevel, canSelectSkill, toggleSelectSkill, getSkillById, getSkillMpCost } = skillsStore
 
 function formatTime(seconds) {
   const hours = Math.floor(seconds / 3600)

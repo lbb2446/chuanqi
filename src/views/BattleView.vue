@@ -201,22 +201,29 @@
 </template>
 
 <script setup>
-import { useGameStore } from '@/stores/game.js'
+import { useCharacterStore } from '@/stores/character.js'
+import { useEquipmentStore } from '@/stores/equipment.js'
+import { useBattleStore } from '@/stores/battle.js'
+import { useMapsStore } from '@/stores/maps.js'
 import { storeToRefs } from 'pinia'
 
-const gameStore = useGameStore()
+const characterStore = useCharacterStore()
+const equipmentStore = useEquipmentStore()
+const battleStore = useBattleStore()
+const mapsStore = useMapsStore()
+
+const { character } = storeToRefs(characterStore)
+const { totalStats } = storeToRefs(equipmentStore)
 const { 
   battleLogs, 
-  character, 
-  totalStats, 
-  currentMap, 
   battleStep, 
   totalBattleSteps, 
   currentBattleMonsters, 
   isBossBattle, 
   canRecover,
   completedCycles
-} = storeToRefs(gameStore)
+} = storeToRefs(battleStore)
+const { currentMap } = storeToRefs(mapsStore)
 
 const getLogClass = (type) => {
   switch (type) {
@@ -240,6 +247,6 @@ const getLogClass = (type) => {
 }
 
 const clearBattleLogs = () => {
-  gameStore.clearBattleLogs()
+  battleStore.clearBattleLogs()
 }
 </script> 

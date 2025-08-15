@@ -64,7 +64,6 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game.js'
-import { useIdleStore } from '@/stores/idle.js'
 import { useLayoutStore } from '@/stores/layout.js'
 import { storeToRefs } from 'pinia'
 
@@ -77,7 +76,6 @@ const tabs = [
 ]
 
 const gameStore = useGameStore()
-const idleStore = useIdleStore()
 const layoutStore = useLayoutStore()
 
 // 获取布局状态
@@ -91,7 +89,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  idleStore.cleanup()
   gameStore.saveGame()
 })
 </script>

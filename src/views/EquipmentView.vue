@@ -268,13 +268,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useGameStore } from '@/stores/game.js'
+import { useEquipmentStore } from '@/stores/equipment.js'
 import { storeToRefs } from 'pinia'
 import itemsData from '@/stores/items.js'
 
-const gameStore = useGameStore()
-const { equipment, inventory } = storeToRefs(gameStore)
-const { equipItem, unequipSlot, sellInventoryItem, discardInventoryItem, useInventoryItem } = gameStore
+const equipmentStore = useEquipmentStore()
+const { equipment, inventory } = storeToRefs(equipmentStore)
+const { equipItem, unequipSlot, sellInventoryItem, discardInventoryItem, useInventoryItem } = equipmentStore
 
 const selectedEquipment = ref(null)
 const maxInventorySize = 400
